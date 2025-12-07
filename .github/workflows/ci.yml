@@ -17,21 +17,29 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"   # stay on 3.12 for CI to avoid 3.13 compat issues
+          python-version: "3.12"
           cache: "pip"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          # Dev tools (if not already in requirements.txt)
           pip install flake8 pytest
 
       - name: Lint with flake8
         run: |
-          # Lint only the source directory to avoid notebook noise
-          if [ -d src ]; then flake8 src; else echo "No src directory, skipping flake8"; fi
+          if [ -d src ]; then
+            echo "Running flake8 on src/..."
+            flake8 src
+          else
+            echo "No src directory, skipping flake8."
+          fi
 
-      - name: Run tests
+      - name: Run tests (if any)
         run: |
-          pytest
+          if [ -d tests ] && [ "$(ls -A tests)" ]; then
+            echo "Tests found, running pytest..."
+            pytest
+          else
+            echo "No tests found in ./tests, skipping pytest."
+          fi
